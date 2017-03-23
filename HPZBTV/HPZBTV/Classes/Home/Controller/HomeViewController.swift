@@ -8,13 +8,53 @@
 
 import UIKit
 
+fileprivate let kTitleViewH :CGFloat = 40
+
+
 class HomeViewController: UIViewController {
 
+    
+    /// <#Description#>
+    fileprivate lazy var pageTitleView : ZBPageTitleView = {
+        let titleFrame = CGRect(x: 0, y: kStatusBarH + kNavigaitonBarH, width: kScreenW, height: kTitleViewH)
+        
+        let titles = ["推荐","游戏","娱乐","趣玩"]
+        let titleView = ZBPageTitleView(frame: titleFrame, titles: titles)
+        titleView.backgroundColor = UIColor.orange
+        titleView.delegate = self
+        return titleView
+        
+    }()
+    
+    fileprivate lazy var pageContengView:PageContentView = {[weak self] in
+    
+        var childVCs = [UIViewController]()
+        
+        
+        for _ in 0..<4{
+            let vc = UIViewController()
+            
+            vc.view.backgroundColor = UIColor(r: CGFloat(arc4random_uniform(255)), g: CGFloat(arc4random_uniform(255)), b: CGFloat(arc4random_uniform(255)))
+            
+            childVCs.append(vc)
+            
+        }
+        
+        let contentH = kScreenH - kStatusBarH - kNavigaitonBarH - kTitleViewH
+        let contentFrame = CGRect(x: 0, y: kStatusBarH + kNavigaitonBarH + kTitleViewH, width: kScreenW, height: contentH)
+        let contentView = PageContentView(frame: contentFrame, childVCs: childVCs, parentViewController: self)
+
+        return contentView
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupUI()
-        // Do any additional setup after loading the view.
+        self.automaticallyAdjustsScrollViewInsets = false
+        view.addSubview(self.pageTitleView)
+        view.addSubview(pageContengView)
+        pageContengView.delegate = self
     }
 
 }
@@ -40,3 +80,19 @@ extension HomeViewController{
     }
     
 }
+
+extension HomeViewController:ZBPageTitleViewDelegate{
+
+    func pageTitleView(pageView: ZBPageTitleView, selectIndex index: Int) {
+        print(index)
+        self.pageContengView.setCurrentIndex(currentIndex: index)
+        
+    }
+}
+
+extension HomeViewController:PageContentViewDelegate{
+    func pageContentView(content: PageContentView, progress: CGFloat, sourceIndex: Int, targetIndex: Int) {
+        self.pageTitleView.setTitleViewProgress(progress: progress, sourceIndex: sourceIndex, targetIndex: targetIndex)
+    }
+}
+
